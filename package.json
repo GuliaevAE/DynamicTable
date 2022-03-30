@@ -1,0 +1,22 @@
+{
+  "name": "crud",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "start": "babel-node ./src/www.js",
+    "build": "babel src --out-dir dist"
+  },
+  "dependencies": {
+    "body-parser": "~1.17.1",
+    "corser": "^2.0.1",
+    "debug": "~2.6.3",
+    "express": "~4.15.2",
+    "lodash": "^4.17.4",
+    "mongoose": "^4.10.4",
+    "morgan": "~1.8.1"
+  },
+  "devDependencies": {
+    "babel-cli": "^6.24.1",
+    "babel-preset-es2015": "^6.24.1"
+  }
+}
