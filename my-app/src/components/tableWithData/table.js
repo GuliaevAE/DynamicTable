@@ -28,7 +28,7 @@ export default function Table() {
     let [valueForAddInput] = useState({})
     let [existId] = useState(new Set())
     let [changer, setChanger] = useState(false)
-    
+
 
     useEffect(() => {
         updatedata()
@@ -48,21 +48,10 @@ export default function Table() {
     function updatedata() {
         axios.get(`http://178.128.196.163:3000/api/records/`)
             .then(res => {
-                //console.log(res.data)
-
-                // setData(res.data)
-
-                // if(state.length===0){
+                console.log(res.data)
                 fillingData(res.data)
-                // }
-
             })
     }
-
-
-
-
-
 
     function fillingData(obj) {
 
@@ -71,14 +60,19 @@ export default function Table() {
 
         if (isOn) {
             nodata = obj.map(item => {
-                item.data._id = item._id
-                return item.data
+                if (item.hasOwnProperty('data')) {
+                    item.data._id = item._id
+                    return item.data
+                } else {
+                    item.data = { _id: item._id, name: "Пустой обьект" }
+                    return item.data
+                }
             })
 
             obj.forEach(item => {
                 allID[item._id] = false
             })
-            //console.log(allID)
+
         } else {
             withdata = obj.slice()
 
@@ -95,16 +89,12 @@ export default function Table() {
             obj.forEach(item => {
                 allID[item._id] = false
             })
-
             nodata.map(item => {
 
                 for (let key in withdata[nodata.indexOf(item)]) {
                     if (key === "data") {
                         for (let datakey in withdata[nodata.indexOf(item)][key]) {
-                            //console.log(datakey)
-                            //console.log(withdata[nodata.indexOf(item)][key][datakey])
                             if (/\d/.test(datakey[0])) {
-
                                 item["№" + datakey] = withdata[nodata.indexOf(item)][key][datakey]
                             } else { item[datakey] = withdata[nodata.indexOf(item)][key][datakey] }
 
@@ -122,9 +112,6 @@ export default function Table() {
         del(`http://178.128.196.163:3000/api/records/${target.id}`)
 
     }
-
-
-
 
     async function post(url, body) {
         try {
@@ -144,7 +131,6 @@ export default function Table() {
         } catch (err) {
             throw Error(err);
         }
-
     }
 
     async function del(url) {
@@ -157,56 +143,39 @@ export default function Table() {
         }
     }
 
-
     function inputChange(target) {
-
-
         if (oldId === target.id) {
-
             inputObject[target.name] = target.value
             inputObject._id = target.id
-            //console.log(inputObject)
         } else {
             oldId = target.id
             inputObject = []
             inputObject[target.name] = target.value
             inputObject._id = target.id
-            //console.log(inputObject)
         }
     }
 
-
     function redaction(e) {
         let newobj = {}
-
-
         function swithInput() {
             let temporaryObject = { data: {} }
             if (e.target.className === "change") {
                 e.target.className = "save"
             } else {
 
-
-                //console.log(state.find(elem=>elem._id === e.target.id))
                 let findedElement = state.find(elem => elem._id === e.target.id)
                 for (let key in findedElement) {
                     if (key !== "_id" && key !== "__v") {
                         temporaryObject.data[key] = findedElement[key]
                     }
-
                 }
-
-
 
                 for (let key in inputObject) {
                     temporaryObject.data[key] = inputObject[key]
                 }
-                //console.log(temporaryObject)
                 post(`http://178.128.196.163:3000/api/records/${e.target.id}`, temporaryObject)
-
                 e.target.className = "change"
             }
-
 
             for (let key in allID) {
                 if (key === e.target.id) {
@@ -216,28 +185,18 @@ export default function Table() {
         }
 
         if (nowRedacting.id === 0) {
-
             nowRedacting.id = e.target.id
-
             swithInput()
-
             setAllID(newobj)
         } else
-
             if (nowRedacting.id !== e.target.id) {
                 alert("Уже редактируется")
             } else {
-
                 swithInput()
-
                 nowRedacting.id = 0
-
                 setAllID(newobj)
             }
-
-
     }
-
 
     function fillingAllKeys() {
         allKeys = []
@@ -245,10 +204,7 @@ export default function Table() {
             Object.keys(item).forEach(key => {
                 if (allKeys.indexOf(key) === -1) {
                     allKeys.push(key)
-
                 }
-
-
             })
         })
     }
@@ -267,7 +223,6 @@ export default function Table() {
                     onChange={(e) => inputChange(e.target)}
                     placeholder={item[key]}
                     disabled={allID[item._id] ? false : true}
-
                 /> : item[key] = "Empty"
             if (key === '_id') {
                 objWithAllKeys[key] = <input
@@ -279,7 +234,6 @@ export default function Table() {
                     onChange={(e) => inputChange(e.target)}
                     placeholder={item[key]}
                     disabled={true}
-
                 />
             }
             if (key === allKeys[allKeys.length - 1]) {
@@ -287,65 +241,71 @@ export default function Table() {
                 objWithAllKeys[key + 2] = <div id={item._id} className="change" onClick={(e) => { redaction(e) }} />
             }
         });
-
         objectsWithAllExistingKeys.push(objWithAllKeys)
     })
 
-
     function TableForAddRecord() {
-
-
         let [inputs, setInputs] = useState([[
             <input
                 id={1}
                 type="text"
                 name="key"
                 size="10"
-                // value={item[key]}
+                list="allKeys"
                 onChange={(e) => addInputChange(e.target)}
                 placeholder="свойство"
-                onClick={(e) => {
-                    //console.log(e.target)
-                }}
             />,
             <input
                 id={1}
                 type="text"
                 name="value"
                 size="10"
-                // value={item[key]}
                 onChange={(e) => addInputChange(e.target)}
                 placeholder="значение"
-                onClick={(e) => {
-                    //console.log(e.target)
-                }}
             />
         ]])
 
+        function isEmpty(obj) {
+            for (let key in obj) {
+                return false;
+            }
+            return true;
+        }
 
         function saveNewRecord() {
-            let temporarydata = { data: {} }
+            let readyForSave = true
+
+            if (isEmpty(valueForAddInput)) {
+                alert("Отсутствует либо свойство, либо значение")
+                readyForSave = false
+            }
+
             Object.values(valueForAddInput).forEach(item => {
-                temporarydata.data[item.key] = item["value"]
+                if (!item.hasOwnProperty("key") || !item.hasOwnProperty("value") || item.key === '' || item.value === '') {
+                    alert("Отсутствует либо свойство, либо значение")
+                    readyForSave = false
+                }
             })
-            //console.log("temporarydata")
-            //console.log(temporarydata)
-            put(`http://178.128.196.163:3000/api/records/`, temporarydata)
 
-
-
+            if (readyForSave === true) {
+                let temporarydata = { data: {} }
+                Object.values(valueForAddInput).forEach(item => {
+                    temporarydata.data[item.key] = item["value"]
+                })
+                put(`http://178.128.196.163:3000/api/records/`, temporarydata)
+                for (let item in valueForAddInput) {
+                    delete valueForAddInput[item]
+                }
+                existId.clear()
+            }
         }
 
         function add2Inputs() {
-
             let inputId = {}
             for (let key in idForAddInput) {
                 inputId[key] = idForAddInput[key] + 1
                 idForAddInput[key] = idForAddInput[key] + 1
             }
-
-            //console.log(inputId)
-
             let arr = []
             arr.push(...inputs, [
                 <input
@@ -353,46 +313,32 @@ export default function Table() {
                     type="text"
                     name="key"
                     size="10"
-
+                    list="allKeys"
                     onChange={(e) => addInputChange(e.target)}
                     placeholder="свойство"
-                   
                 />,
                 <input
                     id={inputId.value}
                     type="text"
                     name="value"
                     size="10"
-
                     onChange={(e) => addInputChange(e.target)}
                     placeholder="значение"
-                    
                 />
             ])
             setInputs(arr)
         }
 
-
-
         function addInputChange(target) {
-            //console.log("inputs")
-
-            // //console.log(inputs)
             if (existId.has(target.id)) {
                 valueForAddInput[target.id][target.name] = target.value
-                //console.log("valueForAddInput")
-                //console.log(valueForAddInput)
             } else {
                 existId.add(target.id)
                 valueForAddInput[target.id] = { [target.name]: target.value }
-                //console.log("valueForAddInput")
-                //console.log(valueForAddInput)
             }
-
         }
 
         return (
-
             <div className="table forAddRecord">
                 <div className="title">
                     <h3>Добавление записи</h3>
@@ -402,13 +348,7 @@ export default function Table() {
 
                 <table >
                     <thead>
-                        {/* <td>Add new records</td>
-                        <td>
-                            
-                        </td>
-                        <td>
-                           
-                        </td> */}
+                        
                     </thead>
 
                     {inputs.map(item => {
@@ -430,7 +370,7 @@ export default function Table() {
         <>
             <div className="background">
                 <div className="table">
-                    <table cellpadding={"5px"}>
+                    <table cellPadding={"5px"}>
                         <tr>
                             {allKeys.map((key) => {
                                 return (
@@ -439,6 +379,7 @@ export default function Table() {
                             })}
                             <img className="icon toggle" src={isOn ? ToggleOn : ToggleOff} alt="change" onClick={() => {
                                 swithcToggle(!isOn)
+                                console.log("fsef")
                                 setChanger(true)
                             }} />
                         </tr>
@@ -451,6 +392,14 @@ export default function Table() {
                                         {values.map(value =>
                                             <td >{value}</td>
                                         )}
+                                        <datalist id="allKeys">
+                                            {allKeys.map(item => {
+                                                if (item !== "_id" && item !== "__v") {
+                                                    return <option value={item} />
+                                                }
+                                            })}
+
+                                        </datalist>
                                     </tr>
                                 </tbody>
                             )
