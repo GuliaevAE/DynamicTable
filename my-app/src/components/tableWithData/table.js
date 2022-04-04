@@ -1,18 +1,11 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import "../tableWithData/table.css"
-import Dell1 from '../images/dell1.svg';
-import Dell2 from '../images/dell2.svg';
-import Change from '../images/change.svg';
-import Change2 from '../images/change2.svg';
+
 import ToggleOn from '../images/toggleOn.svg';
 import ToggleOff from '../images/toggleOff.svg';
 import Save from '../images/save.svg';
 import Add from '../images/add.svg';
-import { isObject } from "lodash";
-
-
-
 
 export default function Table() {
     let [data, setData] = useState([])
@@ -345,12 +338,9 @@ export default function Table() {
                     <img src={Add} onClick={() => add2Inputs()} className="icon" alt="add" />
                     <img src={Save} onClick={() => saveNewRecord()} className="icon" alt="save" />
                 </div>
-
                 <table >
-                    <thead>
-                        
+                    <thead>      
                     </thead>
-
                     {inputs.map(item => {
                         return (<td>
                             {item.map(inp => {
@@ -361,7 +351,6 @@ export default function Table() {
                         </td>)
                     })}
                 </table>
-
             </div>
         )
     }
@@ -379,7 +368,6 @@ export default function Table() {
                             })}
                             <img className="icon toggle" src={isOn ? ToggleOn : ToggleOff} alt="change" onClick={() => {
                                 swithcToggle(!isOn)
-                                console.log("fsef")
                                 setChanger(true)
                             }} />
                         </tr>
